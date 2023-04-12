@@ -1,39 +1,34 @@
 package fr.leswebdevs;
 
-import jakarta.mail.*;
+import jakarta.mail.Folder;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Store;
 import jakarta.mail.event.MessageCountEvent;
 import jakarta.mail.event.MessageCountListener;
 
 import java.io.IOException;
-import java.util.Properties;
 
 public class Main {
     public static void main(String[] args) throws MessagingException {
-        Properties props = new Properties();
-        props.put("mail.store.protocol", "imap");
-        props.put("mail.imap.auth", "true");
-        props.put("mail.imap.starttls.enable", "true");
-        props.put("mail.imap.ssl.enable", "true");
-        props.put("mail.imap.host", "imap.gmail.com");
-        props.put("mail.imap.port", "993");
+        MailConnectionCredentials credentials = MailConnectionCredentials.builder()
+                .imapHost(System.getenv("IMAP_HOST"))
+                .imapPort(Integer.parseInt(System.getenv("IMAP_PORT")))
+                .smtpHost(System.getenv("SMTP_HOST"))
+                .smtpPort(Integer.parseInt(System.getenv("SMTP_PORT")))
+                .email(System.getenv("EMAIL"))
+                .password(System.getenv("PASSWORD"))
+                .isSSL(System.getenv("IS_SSL").equals("true"))
+                .build();
+        MailManager mailManager = new MailManager();
+        mailManager.connect(credentials);
 
-        String email = System.getenv("EMAIL");
-        String imapPassword = System.getenv("IMAP_PASSWORD");
-
-        Authenticator authenticator = new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(email, imapPassword);
-            }
-        };
-        Session session = Session.getInstance(props, authenticator);
-
-        Store store = session.getStore();
-        store.connect();
+        Store store = mailManager.getReadStore();
 
         Folder folder = store.getFolder("INBOX");
         // on n'a pas besoin de modifier quoi que ce soit pour le moment
         folder.open(Folder.READ_ONLY);
+
         // regarde si un message est changé (lu ou pas)
         folder.addMessageChangedListener((messageChangedEvent) -> {
             Message message = messageChangedEvent.getMessage();
@@ -43,6 +38,7 @@ public class Main {
                 throw new RuntimeException(e);
             }
         });
+
         // regarde si on ajoute ou supprime un message (receive
         folder.addMessageCountListener(new MessageCountListener() {
             @Override
