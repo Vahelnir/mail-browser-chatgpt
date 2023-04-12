@@ -1,9 +1,20 @@
 plugins {
     id("java")
+    application
+    id("org.openjfx.javafxplugin") version "0.0.13"
+}
+
+javafx {
+    version = "20"
+    modules = listOf("javafx.controls", "javafx.fxml")
 }
 
 group = "fr.leswebdevs"
 version = "1.0-SNAPSHOT"
+
+application {
+    mainClass.set("fr.leswebdevs.MainApp")
+}
 
 repositories {
     mavenCentral()
