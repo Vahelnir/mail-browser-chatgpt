@@ -16,8 +16,8 @@ public class MailManager {
     }
 
     public void connect(MailConnectionCredentials credentials) throws MessagingException {
-        this.readStore = this.createReadSession(credentials);
-        this.writeSession = this.createWriteSession(credentials);
+        readStore = createReadSession(credentials);
+        writeSession = createWriteSession(credentials);
     }
 
     private Store createReadSession(MailConnectionCredentials credentials) throws MessagingException {
@@ -51,8 +51,7 @@ public class MailManager {
 
         Authenticator authenticator = new MailAuthenticator(credentials);
 
-        Session session = Session.getInstance(props, authenticator);
-        return session;
+        return Session.getInstance(props, authenticator);
     }
 
     public Store getReadStore() {
