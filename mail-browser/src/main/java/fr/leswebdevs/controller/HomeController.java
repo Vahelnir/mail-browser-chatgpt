@@ -16,9 +16,12 @@ import javafx.scene.control.TableView;
 
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.function.BiConsumer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class HomeController implements Initializable {
+
+    private static final int MAIL_PER_PAGE = 20;
 
     private final ObservableList<Message> mails = FXCollections.observableArrayList();
     @FXML
@@ -28,34 +31,40 @@ public class HomeController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        mailManager = MainApp.getInstance().getMailManager();
+        MainApp mainApp = MainApp.getInstance();
         mailTableView.setItems(mails);
-        try {
-            openInbox(this::onFolderReady);
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
+        mainApp.getMailManager()
+                .thenCompose((mailManager) -> {
+                    this.mailManager = mailManager;
+                    return openInbox();
+                })
+                .thenApply(this::setFolder)
+                .thenApply(this::getMessageCount)
+                .thenAccept((messageCount) -> {
+                    loadMessages(messageCount - MAIL_PER_PAGE + 1, messageCount);
+                })
+                .whenComplete((s, error) -> {
+                    // TODO: handle error
+                    System.out.println(error);
+                });
     }
 
-    private void onFolderReady(Folder folder, ConnectionEvent event) {
+    private Folder setFolder(Folder folder) {
         currentFolder = folder;
-        int count = getMessageCount();
-
-        loadMessages(count - 20, count);
+        return folder;
     }
 
     private void loadMessages(int from, int to) {
         try {
             Message[] messages = currentFolder.getMessages(from, to);
-            Message message = messages[0];
-            System.out.println("nbr de messages" + messages.length);
             mails.setAll(messages);
+            System.out.println("updating messages");
         } catch (MessagingException e) {
             throw new RuntimeException("Cannot load messages from " + from + " to " + to);
         }
     }
 
-    private int getMessageCount() {
+    private int getMessageCount(Folder currentFolder) {
         try {
             return currentFolder.getMessageCount();
         } catch (MessagingException e) {
@@ -63,28 +72,41 @@ public class HomeController implements Initializable {
         }
     }
 
-    private void openInbox(BiConsumer<Folder, ConnectionEvent> folderConsumer) throws MessagingException {
-        Store store = mailManager.getReadStore();
+    private CompletableFuture<Folder> openInbox() {
+        return CompletableFuture
+                .supplyAsync(() -> {
+                    Store store = mailManager.getReadStore();
+                    try {
+                        return store.getFolder("INBOX");
+                    } catch (MessagingException e) {
+                        throw new CompletionException(e);
+                    }
+                })
+                .thenCompose((folder) -> {
+                    CompletableFuture<Folder> folderCompletableFuture = new CompletableFuture<>();
+                    folder.addConnectionListener(new ConnectionListener() {
+                        @Override
+                        public void opened(ConnectionEvent e) {
+                            folderCompletableFuture.complete(folder);
+                        }
 
-        Folder folder = store.getFolder("INBOX");
+                        @Override
+                        public void disconnected(ConnectionEvent e) {
+                        }
 
-        folder.addConnectionListener(new ConnectionListener() {
-            @Override
-            public void opened(ConnectionEvent e) {
-                folderConsumer.accept(folder, e);
-            }
+                        @Override
+                        public void closed(ConnectionEvent e) {
+                        }
+                    });
 
-            @Override
-            public void disconnected(ConnectionEvent e) {
-            }
-
-            @Override
-            public void closed(ConnectionEvent e) {
-            }
-        });
-
-        // on n'a pas besoin de modifier quoi que ce soit pour le moment
-        folder.open(Folder.READ_ONLY);
+                    // on n'a pas besoin de modifier quoi que ce soit pour le moment
+                    try {
+                        folder.open(Folder.READ_ONLY);
+                    } catch (MessagingException e) {
+                        throw new CompletionException(e);
+                    }
+                    return folderCompletableFuture;
+                });
     }
 
 }

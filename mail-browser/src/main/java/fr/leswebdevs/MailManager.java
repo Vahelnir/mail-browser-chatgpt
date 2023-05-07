@@ -7,54 +7,93 @@ import jakarta.mail.Session;
 import jakarta.mail.Store;
 
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class MailManager {
+
+    private MailConnectionCredentials credentials;
     private Store readStore;
     private Session writeSession;
 
     public MailManager() {
     }
 
-    public void connect(MailConnectionCredentials credentials) throws MessagingException {
-        readStore = createReadSession(credentials);
-        writeSession = createWriteSession(credentials);
+    public MailManager(MailConnectionCredentials credentials) {
+        this.credentials = credentials;
     }
 
-    private Store createReadSession(MailConnectionCredentials credentials) throws MessagingException {
-        Properties props = new Properties();
-        props.put("mail.store.protocol", "imap");
-        props.put("mail.imap.auth", "true");
-        props.put("mail.imap.ssl.enable", Boolean.toString(credentials.isSSL()));
-        props.put("mail.imap.host", credentials.getImapHost());
-        props.put("mail.imap.port", credentials.getImapPort());
-
-        Authenticator authenticator = new MailAuthenticator(credentials);
-
-        Session session = Session.getInstance(props, authenticator);
-
-        Store store = session.getStore();
-        store.connect();
-
-        return store;
+    public CompletableFuture<MailManager> connect() throws MessagingException {
+        return connect(credentials);
     }
 
-    private Session createWriteSession(MailConnectionCredentials credentials) throws MessagingException {
-        Properties props = new Properties();
-        props.put("mail.smtp.socketFactory.port", credentials.getSmtpPort()); //SSL Port
-        props.put("mail.smtp.socketFactory.class",
-                "javax.net.ssl.SSLSocketFactory"); //SSL Factory Class
+    public CompletableFuture<MailManager> connect(MailConnectionCredentials credentials) {
+        return CompletableFuture.allOf(
+                        createReadSession(credentials)
+                                .thenAccept((store) -> {
+                                    readStore = store;
+                                    System.out.println("set read store");
+                                }),
+                        createWriteSession(credentials)
+                                .thenAccept((session) -> {
+                                    writeSession = session;
+                                })
+                )
+                .thenApply((e) -> this);
+    }
 
-        props.put("mail.smtp.port", "587"); //TLS Port
-        props.put("mail.smtp.auth", "true"); //enable authentication
-        props.put("mail.smtp.starttls.enable", Boolean.toString(credentials.isSSL())); //enable STARTTLS
+    private CompletableFuture<Store> createReadSession(MailConnectionCredentials credentials) {
+        return CompletableFuture.supplyAsync(() -> {
+            Properties props = new Properties();
+            props.put("mail.store.protocol", "imap");
+            props.put("mail.imap.auth", "true");
+            props.put("mail.imap.ssl.enable", Boolean.toString(credentials.isSSL()));
+            props.put("mail.imap.host", credentials.getImapHost());
+            props.put("mail.imap.port", credentials.getImapPort());
+
+            Authenticator authenticator = new MailAuthenticator(credentials);
+
+            Session session = Session.getInstance(props, authenticator);
+
+            Store store = null;
+            try {
+                store = session.getStore();
+                store.connect();
+            } catch (MessagingException e) {
+                throw new CompletionException(e);
+            }
+
+            return store;
+        });
+    }
+
+    private CompletableFuture<Session> createWriteSession(MailConnectionCredentials credentials) {
+        return CompletableFuture.supplyAsync(() -> {
+            Properties props = new Properties();
+            props.put("mail.smtp.socketFactory.port", credentials.getSmtpPort()); //SSL Port
+            props.put("mail.smtp.socketFactory.class",
+                    "javax.net.ssl.SSLSocketFactory"); //SSL Factory Class
+
+            props.put("mail.smtp.port", "587"); //TLS Port
+            props.put("mail.smtp.auth", "true"); //enable authentication
+            props.put("mail.smtp.starttls.enable", Boolean.toString(credentials.isSSL())); //enable STARTTLS
 
 
-        Authenticator authenticator = new MailAuthenticator(credentials);
+            Authenticator authenticator = new MailAuthenticator(credentials);
+            return Session.getInstance(props, authenticator);
+        });
+    }
 
-        return Session.getInstance(props, authenticator);
+    public MailConnectionCredentials getCredentials() {
+        return credentials;
+    }
+
+    public void setCredentials(MailConnectionCredentials credentials) {
+        this.credentials = credentials;
     }
 
     public Store getReadStore() {
+        System.out.println("get read store");
         return readStore;
     }
 

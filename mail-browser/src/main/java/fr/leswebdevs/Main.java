@@ -8,9 +8,10 @@ import jakarta.mail.event.MessageCountEvent;
 import jakarta.mail.event.MessageCountListener;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 public class Main {
-    public static void main(String[] args) throws MessagingException {
+    public static void main(String[] args) throws MessagingException, ExecutionException, InterruptedException {
         MailConnectionCredentials credentials = MailConnectionCredentials.builder()
                 .imapHost(System.getenv("IMAP_HOST"))
                 .imapPort(Integer.parseInt(System.getenv("IMAP_PORT")))
@@ -21,7 +22,7 @@ public class Main {
                 .isSSL(System.getenv("IS_SSL").equals("true"))
                 .build();
         MailManager mailManager = new MailManager();
-        mailManager.connect(credentials);
+        mailManager.connect(credentials).get();
 
         Store store = mailManager.getReadStore();
 

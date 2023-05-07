@@ -8,11 +8,13 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class MainApp extends Application {
 
     private static MainApp instance;
-    private MailManager mailManager;
+    private CompletableFuture<MailManager> mailManager;
 
     public static void main(String[] args) {
         launch();
@@ -25,11 +27,11 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         instance = this;
-        try {
-            initMailManager();
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            initMailManager();
+//        } catch (MessagingException e) {
+//            throw new RuntimeException(e);
+//        }
         URL location = getClass().getResource("/fxml/main.fxml");
         FXMLLoader loader = new FXMLLoader(location);
         Scene scene = new Scene(loader.load(), 640, 480);
@@ -37,7 +39,7 @@ public class MainApp extends Application {
         stage.show();
     }
 
-    public void initMailManager() throws MessagingException {
+    private CompletableFuture<MailManager> initMailManager() {
         MailConnectionCredentials credentials = MailConnectionCredentials.builder()
                 .imapHost(System.getenv("IMAP_HOST"))
                 .imapPort(Integer.parseInt(System.getenv("IMAP_PORT")))
@@ -47,11 +49,18 @@ public class MainApp extends Application {
                 .password(System.getenv("PASSWORD"))
                 .isSSL(System.getenv("IS_SSL").equals("true"))
                 .build();
-        mailManager = new MailManager();
-        mailManager.connect(credentials);
+        MailManager mailManager = new MailManager(credentials);
+        try {
+            return mailManager.connect();
+        } catch (MessagingException e) {
+            throw new CompletionException(e);
+        }
     }
 
-    public MailManager getMailManager() {
+    public CompletableFuture<MailManager> getMailManager() {
+        if (mailManager == null) {
+            mailManager = initMailManager();
+        }
         return mailManager;
     }
 
