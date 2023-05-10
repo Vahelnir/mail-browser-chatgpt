@@ -65,7 +65,7 @@ public class ConfigConnection implements Initializable {
                     writeFile();
                     showNextScene();
                 } catch (Exception e) {
-                    setMessageError(MESSAGE_FILE_ERROR, true, COLOR_RED);
+                    setMessageError(e.getMessage(), true, COLOR_RED);
                 }
             }
         });
