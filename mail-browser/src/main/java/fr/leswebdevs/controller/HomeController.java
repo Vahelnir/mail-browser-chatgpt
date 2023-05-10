@@ -26,9 +26,9 @@ public class HomeController implements Initializable {
 
     private static final int MAIL_PER_PAGE = 20;
 
-    private final ObservableList<Message> mails = FXCollections.observableArrayList();
+    private final ObservableList<MailTableItem> mails = FXCollections.observableArrayList();
     @FXML
-    public TableView<Message> mailTableView;
+    public TableView<MailTableItem> mailTableView;
     private MailManager mailManager;
     private Folder currentFolder;
 
@@ -60,7 +60,24 @@ public class HomeController implements Initializable {
     private void loadMessages(int from, int to) {
         try {
             Message[] messages = currentFolder.getMessages(from, to);
-            mails.setAll(messages);
+
+            FetchProfile fp = new FetchProfile();
+            fp.add(Item.ENVELOPE);
+            fp.add(UIDFolder.FetchProfileItem.FLAGS);
+            fp.add(UIDFolder.FetchProfileItem.CONTENT_INFO);
+            currentFolder.fetch(messages, fp);
+
+            List<MailTableItem> mailTableItems = Arrays.stream(messages)
+                .map(message -> {
+                    try {
+                        return MailTableItemAdapter.from(message);
+                    } catch (MessagingException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+
+            mails.setAll(mailTableItems);
             System.out.println("updating messages");
         } catch (MessagingException e) {
             throw new RuntimeException("Cannot load messages from " + from + " to " + to);

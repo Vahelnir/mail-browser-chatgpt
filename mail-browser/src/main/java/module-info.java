@@ -6,5 +6,6 @@ module mail.browser.main {
 
     opens fr.leswebdevs to javafx.fxml;
     opens fr.leswebdevs.controller to javafx.fxml;
+    opens fr.leswebdevs.dto to javafx.base;
     exports fr.leswebdevs;
 }
