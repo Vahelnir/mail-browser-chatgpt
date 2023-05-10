@@ -13,14 +13,14 @@ import java.util.concurrent.ExecutionException;
 public class Main {
     public static void main(String[] args) throws MessagingException, ExecutionException, InterruptedException {
         MailConnectionCredentials credentials = MailConnectionCredentials.builder()
-                .imapHost(System.getenv("IMAP_HOST"))
-                .imapPort(Integer.parseInt(System.getenv("IMAP_PORT")))
-                .smtpHost(System.getenv("SMTP_HOST"))
-                .smtpPort(Integer.parseInt(System.getenv("SMTP_PORT")))
-                .email(System.getenv("EMAIL"))
-                .password(System.getenv("PASSWORD"))
-                .isSSL(System.getenv("IS_SSL").equals("true"))
-                .build();
+            .imapHost(System.getenv("IMAP_HOST"))
+            .imapPort(Integer.parseInt(System.getenv("IMAP_PORT")))
+            .smtpHost(System.getenv("SMTP_HOST"))
+            .smtpPort(Integer.parseInt(System.getenv("SMTP_PORT")))
+            .email(System.getenv("EMAIL"))
+            .password(System.getenv("PASSWORD"))
+            .isSSL(System.getenv("IS_SSL").equals("true"))
+            .build();
         MailManager mailManager = new MailManager();
         mailManager.connect(credentials).get();
 

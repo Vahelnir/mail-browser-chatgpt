@@ -2,10 +2,9 @@ package fr.leswebdevs.controller;
 
 import fr.leswebdevs.MailManager;
 import fr.leswebdevs.MainApp;
-import jakarta.mail.Folder;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.Store;
+import fr.leswebdevs.adapter.MailTableItemAdapter;
+import fr.leswebdevs.dto.MailTableItem;
+import jakarta.mail.*;
 import jakarta.mail.event.ConnectionEvent;
 import jakarta.mail.event.ConnectionListener;
 import javafx.collections.FXCollections;
@@ -15,9 +14,13 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+
+import static jakarta.mail.FetchProfile.Item;
 
 public class HomeController implements Initializable {
 
@@ -34,19 +37,19 @@ public class HomeController implements Initializable {
         MainApp mainApp = MainApp.getInstance();
         mailTableView.setItems(mails);
         mainApp.getMailManager()
-                .thenCompose((mailManager) -> {
-                    this.mailManager = mailManager;
-                    return openInbox();
-                })
-                .thenApply(this::setFolder)
-                .thenApply(this::getMessageCount)
-                .thenAccept((messageCount) -> {
-                    loadMessages(messageCount - MAIL_PER_PAGE + 1, messageCount);
-                })
-                .whenComplete((s, error) -> {
-                    // TODO: handle error
-                    System.out.println(error);
-                });
+            .thenCompose((mailManager) -> {
+                this.mailManager = mailManager;
+                return openInbox();
+            })
+            .thenApply(this::setFolder)
+            .thenApply(this::getMessageCount)
+            .thenAccept((messageCount) -> {
+                loadMessages(messageCount - MAIL_PER_PAGE + 1, messageCount);
+            })
+            .whenComplete((s, error) -> {
+                // TODO: handle error
+                System.out.println(error);
+            });
     }
 
     private Folder setFolder(Folder folder) {
@@ -74,39 +77,39 @@ public class HomeController implements Initializable {
 
     private CompletableFuture<Folder> openInbox() {
         return CompletableFuture
-                .supplyAsync(() -> {
-                    Store store = mailManager.getReadStore();
-                    try {
-                        return store.getFolder("INBOX");
-                    } catch (MessagingException e) {
-                        throw new CompletionException(e);
+            .supplyAsync(() -> {
+                Store store = mailManager.getReadStore();
+                try {
+                    return store.getFolder("INBOX");
+                } catch (MessagingException e) {
+                    throw new CompletionException(e);
+                }
+            })
+            .thenCompose((folder) -> {
+                CompletableFuture<Folder> folderCompletableFuture = new CompletableFuture<>();
+                folder.addConnectionListener(new ConnectionListener() {
+                    @Override
+                    public void opened(ConnectionEvent e) {
+                        folderCompletableFuture.complete(folder);
                     }
-                })
-                .thenCompose((folder) -> {
-                    CompletableFuture<Folder> folderCompletableFuture = new CompletableFuture<>();
-                    folder.addConnectionListener(new ConnectionListener() {
-                        @Override
-                        public void opened(ConnectionEvent e) {
-                            folderCompletableFuture.complete(folder);
-                        }
 
-                        @Override
-                        public void disconnected(ConnectionEvent e) {
-                        }
-
-                        @Override
-                        public void closed(ConnectionEvent e) {
-                        }
-                    });
-
-                    // on n'a pas besoin de modifier quoi que ce soit pour le moment
-                    try {
-                        folder.open(Folder.READ_ONLY);
-                    } catch (MessagingException e) {
-                        throw new CompletionException(e);
+                    @Override
+                    public void disconnected(ConnectionEvent e) {
                     }
-                    return folderCompletableFuture;
+
+                    @Override
+                    public void closed(ConnectionEvent e) {
+                    }
                 });
+
+                // on n'a pas besoin de modifier quoi que ce soit pour le moment
+                try {
+                    folder.open(Folder.READ_ONLY);
+                } catch (MessagingException e) {
+                    throw new CompletionException(e);
+                }
+                return folderCompletableFuture;
+            });
     }
 
 }

@@ -29,17 +29,17 @@ public class MailManager {
 
     public CompletableFuture<MailManager> connect(MailConnectionCredentials credentials) {
         return CompletableFuture.allOf(
-                        createReadSession(credentials)
-                                .thenAccept((store) -> {
-                                    readStore = store;
-                                    System.out.println("set read store");
-                                }),
-                        createWriteSession(credentials)
-                                .thenAccept((session) -> {
-                                    writeSession = session;
-                                })
-                )
-                .thenApply((e) -> this);
+                createReadSession(credentials)
+                    .thenAccept((store) -> {
+                        readStore = store;
+                        System.out.println("set read store");
+                    }),
+                createWriteSession(credentials)
+                    .thenAccept((session) -> {
+                        writeSession = session;
+                    })
+            )
+            .thenApply((e) -> this);
     }
 
     private CompletableFuture<Store> createReadSession(MailConnectionCredentials credentials) {
@@ -72,7 +72,7 @@ public class MailManager {
             Properties props = new Properties();
             props.put("mail.smtp.socketFactory.port", credentials.getSmtpPort()); //SSL Port
             props.put("mail.smtp.socketFactory.class",
-                    "javax.net.ssl.SSLSocketFactory"); //SSL Factory Class
+                "javax.net.ssl.SSLSocketFactory"); //SSL Factory Class
 
             props.put("mail.smtp.port", "587"); //TLS Port
             props.put("mail.smtp.auth", "true"); //enable authentication

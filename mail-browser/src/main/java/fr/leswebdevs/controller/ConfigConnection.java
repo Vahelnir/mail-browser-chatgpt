@@ -25,6 +25,11 @@ import java.util.ResourceBundle;
 
 public class ConfigConnection implements Initializable {
 
+    private static final String PORT_REGEX = "^[0-9]{0,4}$";
+    private static final String MESSAGE_CONNECTION_ERROR = "Erreur lors de la connexion";
+    private static final String MESSAGE_FILE_ERROR = "Erreur lors de l'enregistrement de la configuration";
+    private static final String COLOR_RED = "#FF0000";
+    private static final String COLOR_Black = "#000000";
     @FXML
     public AnchorPane configAnchorPane;
     @FXML
@@ -41,17 +46,8 @@ public class ConfigConnection implements Initializable {
     public TextInputControl configPortSMTP;
     @FXML
     public CheckBox configSSL;
-
     @FXML
     public Label configMessageError;
-
-    private static final String PORT_REGEX = "^[0-9]{0,4}$";
-    private static final String MESSAGE_CONNECTION_ERROR = "Erreur lors de la connexion";
-
-    private static final String MESSAGE_FILE_ERROR = "Erreur lors de l'enregistrement de la configuration";
-
-    private static final String COLOR_RED = "#FF0000";
-    private static final String COLOR_Black = "#000000";
     private MailConnectionCredentials credentials;
 
     public void onClickValidate() throws MessagingException {
@@ -72,21 +68,21 @@ public class ConfigConnection implements Initializable {
     }
 
     private void writeFile() throws Exception {
-        if (!ConfigFile.writeFile(this.credentials)) {
+        if (!ConfigFile.writeFile(credentials)) {
             throw new Exception(MESSAGE_FILE_ERROR);
         }
     }
 
     private MailManager tryToConnect() {
-        this.credentials = MailConnectionCredentials.builder()
-                .email(this.configEmail.getText())
-                .password(this.configPassword.getText())
-                .smtpHost(this.configAddrSMTP.getText())
-                .smtpPort(Integer.parseInt(this.configPortSMTP.getText()))
-                .imapHost(this.configAddrIMAP.getText())
-                .imapPort(Integer.parseInt(this.configPortIMAP.getText()))
-                .isSSL(this.configSSL.isSelected())
-                .build();
+        credentials = MailConnectionCredentials.builder()
+            .email(configEmail.getText())
+            .password(configPassword.getText())
+            .smtpHost(configAddrSMTP.getText())
+            .smtpPort(Integer.parseInt(configPortSMTP.getText()))
+            .imapHost(configAddrIMAP.getText())
+            .imapPort(Integer.parseInt(configPortIMAP.getText()))
+            .isSSL(configSSL.isSelected())
+            .build();
         MailManager mailManager = new MailManager();
         mailManager.setCredentials(credentials);
         return mailManager;
@@ -117,16 +113,16 @@ public class ConfigConnection implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        this.setTextFormatters();
+        setTextFormatters();
     }
 
     private void setTextFormatters() {
-        configPortSMTP.setTextFormatter(this.formatInput(PORT_REGEX));
-        configPortIMAP.setTextFormatter(this.formatInput(PORT_REGEX));
+        configPortSMTP.setTextFormatter(formatInput(PORT_REGEX));
+        configPortIMAP.setTextFormatter(formatInput(PORT_REGEX));
     }
 
     private TextFormatter<Boolean> formatInput(String regex) {
         return new TextFormatter<>(change ->
-                (change.getControlNewText().matches(regex)) ? change : null);
+            (change.getControlNewText().matches(regex)) ? change : null);
     }
 }

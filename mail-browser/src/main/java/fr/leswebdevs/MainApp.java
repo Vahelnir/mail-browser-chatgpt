@@ -13,6 +13,8 @@ import java.util.concurrent.CompletionException;
 
 public class MainApp extends Application {
 
+    public static final int SCREEN_WIDTH = 640;
+    public static final int SCREEN_HEIGHT = 480;
     private static MainApp instance;
     private CompletableFuture<MailManager> mailManager;
 
@@ -23,9 +25,6 @@ public class MainApp extends Application {
     public static MainApp getInstance() {
         return instance;
     }
-
-    public static final int SCREEN_WIDTH = 640;
-    public static final int SCREEN_HEIGHT = 480;
 
     @Override
     public void start(Stage stage) throws IOException {
