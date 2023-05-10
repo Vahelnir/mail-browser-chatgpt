@@ -1,6 +1,5 @@
 package fr.leswebdevs.mail;
 
-import fr.leswebdevs.MailConnectionCredentials;
 import jakarta.mail.Authenticator;
 import jakarta.mail.PasswordAuthentication;
 

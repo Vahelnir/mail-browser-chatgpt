@@ -1,5 +1,7 @@
 package fr.leswebdevs;
 
+import fr.leswebdevs.mail.MailConnectionCredentials;
+import fr.leswebdevs.mail.MailManager;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;

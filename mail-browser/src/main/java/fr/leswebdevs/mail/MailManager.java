@@ -1,6 +1,5 @@
-package fr.leswebdevs;
+package fr.leswebdevs.mail;
 
-import fr.leswebdevs.mail.MailAuthenticator;
 import jakarta.mail.Authenticator;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;

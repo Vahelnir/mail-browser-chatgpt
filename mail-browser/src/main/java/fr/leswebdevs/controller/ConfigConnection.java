@@ -1,9 +1,9 @@
 package fr.leswebdevs.controller;
 
 import fr.leswebdevs.ConfigFile;
-import fr.leswebdevs.MailConnectionCredentials;
-import fr.leswebdevs.MailManager;
 import fr.leswebdevs.MainApp;
+import fr.leswebdevs.mail.MailConnectionCredentials;
+import fr.leswebdevs.mail.MailManager;
 import jakarta.mail.MessagingException;
 import javafx.application.Platform;
 import javafx.fxml.FXML;

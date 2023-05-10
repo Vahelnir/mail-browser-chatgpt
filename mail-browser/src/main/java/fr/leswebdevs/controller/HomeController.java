@@ -1,9 +1,9 @@
 package fr.leswebdevs.controller;
 
-import fr.leswebdevs.MailManager;
 import fr.leswebdevs.MainApp;
 import fr.leswebdevs.adapter.MailTableItemAdapter;
 import fr.leswebdevs.dto.MailTableItem;
+import fr.leswebdevs.mail.MailManager;
 import jakarta.mail.*;
 import jakarta.mail.event.ConnectionEvent;
 import jakarta.mail.event.ConnectionListener;
@@ -49,6 +49,7 @@ public class HomeController implements Initializable {
             .whenComplete((s, error) -> {
                 // TODO: handle error
                 System.out.println(error);
+                error.printStackTrace();
             });
     }
 

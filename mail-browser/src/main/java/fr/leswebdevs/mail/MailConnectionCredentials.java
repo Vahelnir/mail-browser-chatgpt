@@ -1,4 +1,4 @@
-package fr.leswebdevs;
+package fr.leswebdevs.mail;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -1,5 +1,6 @@
 package fr.leswebdevs;
 
+import fr.leswebdevs.mail.MailManager;
 import jakarta.mail.MessagingException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

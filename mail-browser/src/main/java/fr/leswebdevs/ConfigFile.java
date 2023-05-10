@@ -1,5 +1,7 @@
 package fr.leswebdevs;
 
+import fr.leswebdevs.mail.MailConnectionCredentials;
+
 import java.io.*;
 
 public class ConfigFile {
