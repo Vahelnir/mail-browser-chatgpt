@@ -7,10 +7,14 @@ import fr.leswebdevs.mail.MailManager;
 import jakarta.mail.*;
 import jakarta.mail.event.ConnectionEvent;
 import jakarta.mail.event.ConnectionListener;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Pagination;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
@@ -29,8 +33,11 @@ public class HomeController implements Initializable {
     private final ObservableList<MailTableItem> mails = FXCollections.observableArrayList();
     @FXML
     public TableView<MailTableItem> mailTableView;
+    @FXML
+    public Pagination mailPagination;
     private MailManager mailManager;
     private Folder currentFolder;
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -45,6 +52,7 @@ public class HomeController implements Initializable {
             .thenApply(this::getMessageCount)
             .thenAccept((messageCount) -> {
                 loadMessages(messageCount - MAIL_PER_PAGE + 1, messageCount);
+                initPagination(messageCount);
             })
             .whenComplete((s, error) -> {
                 // TODO: handle error
@@ -53,10 +61,30 @@ public class HomeController implements Initializable {
             });
     }
 
+    private void initPagination(int messageCount) {
+        Platform.runLater(() -> {
+            try {
+                mailPagination.setPageCount(currentFolder.getMessages().length / MAIL_PER_PAGE);
+                mailPagination.currentPageIndexProperty().addListener(new ChangeListener<Number>() {
+                    @Override
+                    public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                        System.out.println(newValue.intValue());
+                        int from = messageCount - ((newValue.intValue() + 1) * MAIL_PER_PAGE);
+                        loadMessages(from + 1, from + MAIL_PER_PAGE);
+                    }
+                });
+
+            } catch (MessagingException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+    }
+
     private Folder setFolder(Folder folder) {
         currentFolder = folder;
         return folder;
     }
+
 
     private void loadMessages(int from, int to) {
         try {
