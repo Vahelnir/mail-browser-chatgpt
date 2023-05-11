@@ -8,10 +8,9 @@ import jakarta.mail.*;
 import jakarta.mail.event.ConnectionEvent;
 import jakarta.mail.event.ConnectionListener;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Pagination;
@@ -42,7 +41,14 @@ public class HomeController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         MainApp mainApp = MainApp.getInstance();
-        mailTableView.setItems(mails);
+
+        SortedList<MailTableItem> sortedMailItems = new SortedList<>(
+            mails,
+            (a, b) -> b.getReceivedAt()
+                .compareTo(a.getReceivedAt())
+        );
+        mailTableView.setItems(sortedMailItems);
+
         mainApp.getMailManager()
             .thenCompose((mailManager) -> {
                 this.mailManager = mailManager;
@@ -55,29 +61,28 @@ public class HomeController implements Initializable {
                 initPagination(messageCount);
             })
             .whenComplete((s, error) -> {
-                // TODO: handle error
                 System.out.println(error);
                 error.printStackTrace();
             });
     }
 
     private void initPagination(int messageCount) {
-        Platform.runLater(() -> {
-            try {
-                mailPagination.setPageCount(currentFolder.getMessages().length / MAIL_PER_PAGE);
-                mailPagination.currentPageIndexProperty().addListener(new ChangeListener<Number>() {
-                    @Override
-                    public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                        System.out.println(newValue.intValue());
-                        int from = messageCount - ((newValue.intValue() + 1) * MAIL_PER_PAGE);
-                        loadMessages(from + 1, from + MAIL_PER_PAGE);
-                    }
-                });
+        Platform.runLater(this::updatePage);
 
-            } catch (MessagingException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+        mailPagination
+            .currentPageIndexProperty()
+            .addListener((observable, oldValue, newValue) -> {
+                int from = messageCount - ((newValue.intValue() + 1) * MAIL_PER_PAGE);
+                loadMessages(from + 1, from + MAIL_PER_PAGE);
+            });
+    }
+
+    private void updatePage() {
+        try {
+            mailPagination.setPageCount(currentFolder.getMessageCount() / MAIL_PER_PAGE);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Folder setFolder(Folder folder) {
