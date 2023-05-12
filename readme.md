@@ -1,13 +1,26 @@
 # Github
 https://github.com/Vahelnir/mail-browser-chatgpt <br/> 
-Branch : mail-browser
 
-# Mail browser chatgpt App
+School project where we had to create a java application with javafx. 
+The application has to list your mails & automatically respond to newly received mail, or create new events in your google calendar.
+It was split into multiple parts:
+- the javafx client which is fetching all of your mails
+- a module to categorise newly received mails into categories
+- a module to automatically respond to received mails depending on the mail's category
+- a module to automatically create events in your google calendar depending on the mail's category.
+- an android application doing all of the above
 
-This project have make with Java.
-this branch aims at creating the client application for reading e-mails.
+# JavaFX Client
+This part was developed by Christophe, Yasmine, Romain and Valentin.
 
-# Installation
+## Installation
 
-For run this project you must have SDK 17.<br/> <br/> 
+You have to have at least Java 17.<br/> <br/> 
 You need to set up your gmail account to allow the application to use it. <br> Please folow https://support.google.com/mail/answer/185833?hl=en-GB.
+
+- in `mail-browser/`:
+```sh 
+./gradlew build
+```
+- extract the zip/tar file located in `mail-browser/distributions/`
+- run the executable file in `{extracted}/bin/mail-browser` (or the .bat file on windows) folder
