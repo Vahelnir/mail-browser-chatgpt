@@ -22,6 +22,10 @@ You need to set up your gmail account to allow the application to use it. <br> P
 ```sh 
 ./gradlew build
 ```
+- extract the zip/tar file located in `build/distributions/`
+- execute the file (or the .bat on windows) located in `{extracted}/bin/`
+
+## Build avec jlink
 - then run
 ```sh
 ./gradlew jlink
