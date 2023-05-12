@@ -22,4 +22,4 @@ Simply run, in `mail-browser/`:
 ```sh 
 ./gradlew build
 ```
-and then run `mail-browser/build/libs`
+and then run the jar located in `mail-browser/build/libs`
