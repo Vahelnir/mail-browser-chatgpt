@@ -18,8 +18,9 @@ This part was developed by Christophe, Yasmine, Romain and Valentin.
 You have to have at least Java 17.<br/> <br/> 
 You need to set up your gmail account to allow the application to use it. <br> Please folow https://support.google.com/mail/answer/185833?hl=en-GB.
 
-Simply run, in `mail-browser/`:
+- in `mail-browser/`:
 ```sh 
 ./gradlew build
 ```
-and then run the jar located in `mail-browser/build/libs`
+- extract the zip/tar file located in `mail-browser/distributions/`
+- run the executable file in `{extracted}/bin/mail-browser` (or the .bat file on windows) folder
