@@ -22,5 +22,8 @@ You need to set up your gmail account to allow the application to use it. <br> P
 ```sh 
 ./gradlew build
 ```
-- extract the zip/tar file located in `mail-browser/distributions/`
-- run the executable file in `{extracted}/bin/mail-browser` (or the .bat file on windows) folder
+- then run
+```sh
+./gradlew jlink
+```
+- run `build/image/bin/mail-browser` (or the .bat file on windows)

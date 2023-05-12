@@ -25,7 +25,9 @@ jlink {
     addOptions("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages")
     launcher {
         name = "mail-browser"
+        jvmArgs = listOf("-Djdk.tls.client.protocols=TLSv1.2")
     }
+    forceMerge("angus-mail")
 }
 
 application {
