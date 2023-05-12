@@ -4,7 +4,7 @@ plugins {
     id("org.openjfx.javafxplugin") version "0.0.13"
     id("io.freefair.lombok") version "8.0.1"
     id("org.javamodularity.moduleplugin") version "1.8.12" apply false
-
+    id("org.beryx.jlink") version "2.26.0"
 }
 
 plugins.withType<JavaPlugin>().configureEach {
@@ -20,6 +20,13 @@ javafx {
 
 group = "fr.leswebdevs"
 version = "1.0-SNAPSHOT"
+
+jlink {
+    addOptions("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages")
+    launcher {
+        name = "mail-browser"
+    }
+}
 
 application {
     mainModule.set("mail.browser.main")
