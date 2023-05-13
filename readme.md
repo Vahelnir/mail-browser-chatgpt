@@ -3,26 +3,20 @@ Overall, the program is a simple example of how to use the Google Calendar API t
 
 
 
-Installation:
+Installation :
 
--Java 1.8 or greater.
-
--Gradle 7.0 or greater.
-
--A Google Cloud project.
-
--A Google account with Google Calendar enabled.
+* Java 1.8 or greater.
+* Gradle 7.0 or greater.
+* A Google Cloud project.
+* A Google account with Google Calendar enabled.
 
 
 
-Prepare the workspace:
+Prepare the workspace :
 
-run "
-gradle init --type basic "
-In your working directory to create a new project structure.
+run "gradle init --type basic" in your working directory to create a new project structure.
 
-then run "
-gradle run "
+then run "gradle run"
 
 
 
