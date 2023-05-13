@@ -33,10 +33,10 @@ public class Main {
         String data = localDateTime.format(DateTimeFormatter.ISO_DATE_TIME);
         System.out.println();
         Event event = new Event().setSummary(nome);
-        EventDateTime eventDateTimeStart = new EventDateTime().setDateTime(new DateTime(data)).setTimeZone("America/Sao_Paulo");
+        EventDateTime eventDateTimeStart = new EventDateTime().setDateTime(new DateTime(data)).setTimeZone("France/Paris");
         event.setStart(eventDateTimeStart);
         data = localDateTime.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME);
-        EventDateTime eventDateTimeEnd = new EventDateTime().setDateTime(new DateTime(data)).setTimeZone("America/Sao_Paulo");
+        EventDateTime eventDateTimeEnd = new EventDateTime().setDateTime(new DateTime(data)).setTimeZone("France/Paris");
         event.setStart(eventDateTimeEnd);
         event = service.events().insert("primary", event).execute();
         sc.close();
