@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
-import static org.jaaumg.CalendarQuickstart.*;
+import static quickstart.*;
 
 public class Main {
 
